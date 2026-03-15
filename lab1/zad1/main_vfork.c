@@ -26,7 +26,11 @@ int main(int argc, char* argv[]) {
 
     // Create `N` children
     for (int i = 0; i < N; ++i) {
-        pid_t child_pid = fork();
+        // `vfork()` works differently than `fork()`
+        // 1. It creates a child process which shares memory with its parent
+        // 2. It puts the parent process to sleep until its children dies (!)
+        // Therefore, the output is printed sequentially, and the global var is incremented here.
+        pid_t child_pid = vfork();
         
         // Child's path
         if (child_pid == 0) {

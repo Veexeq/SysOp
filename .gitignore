@@ -1,9 +1,11 @@
 *.code-workspace
+.vscode/
 .DS_Store
 *~
 
 misc/
 
 *.o
+*.out
 **/app
 *.exe
