@@ -23,7 +23,20 @@ int main(int argc, char *argv[]) {
         printf("Użycie programu: %s <liczba> <liczba>\n", argv[0]);
     }
 
-    printf("%ld, %ld\n", N, M);
+    // Remove output file
+    int status;
+    pid_t remover_pid = fork();
+    if (remover_pid == 0) {
+        execlp("rm", "rm", OUTPUT_NAME, NULL);
+    } else {
+        wait(&status);
+    }
+
+    if (status != 0) {
+        perror("ERROR: removing file unsuccessful.\n");
+        printf("Nie udało się usunąć pliku %s\n", OUTPUT_NAME);
+        return 1;
+    }
 
     for (int i = 0; i < N; ++i) {
         pid_t child_pid = fork();

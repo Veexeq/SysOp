@@ -1,4 +1,5 @@
 #include "definitions.h"
+#include <string.h>
 
 int main(int argc, char *argv[]) {
 
@@ -16,9 +17,22 @@ int main(int argc, char *argv[]) {
         printf("Użycie programu: %s <liczba>\n", argv[0]);
     }
 
-    for (int i = 0; i < M; ++i) {
-        printf("Potomek (%d)\n", getpid());
+    FILE *file = fopen(OUTPUT_NAME, "a");
+    if (!file) {
+        perror("ERROR: couldn't open file\n");
+        return 1;
     }
+
+    char buf[32];
+    snprintf(buf, sizeof(buf), "Potomek (%d)\n", getpid());
+    size_t msg_length = strlen(buf);
+
+    for (int i = 0; i < M; ++i) {
+        fwrite(buf, sizeof(char), msg_length, file);
+        fflush(file);
+    }
+
+    fclose(file);
 
     return 0;
 }
