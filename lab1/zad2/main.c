@@ -25,8 +25,6 @@ int main(int argc, char *argv[]) {
         printf("Użycie programu: %s <liczba> <liczba>\n", argv[0]);
     }
 
-    printf("%ld, %ld\n", N, M);
-
     for (int i = 0; i < N; ++i) {
         pid_t child_pid = fork();
         if (child_pid == 0) {
