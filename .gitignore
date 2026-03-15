@@ -1,2 +1,9 @@
 *.code-workspace
+.DS_Store
+*~
+
 misc/
+
+*.o
+**/app
+*.exe
