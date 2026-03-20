@@ -1,0 +1,95 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "task.autoDetect": "off",
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Build project with Make",
+        "type": "shell",
+        "command": "make",
+        "args": [
+          "all"
+        ],
+        "options": {
+          "cwd": "${fileDirname}"
+        },
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "problemMatcher": [
+          "$gcc"
+        ],
+        "detail": "Kompilacja za pomocą Makefile w folderze aktywnego pliku"
+      },
+      {
+        "label": "Clean project with Make",
+        "type": "shell",
+        "command": "make",
+        "args": [
+          "clean"
+        ],
+        "options": {
+          "cwd": "${fileDirname}"
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "Prosty build (GCC)",
+        "type": "shell",
+        "command": "gcc",
+        "args": [
+          "${fileBasename}",
+          "-Wall",
+          "-g",
+          "-o",
+          "${fileBasenameNoExtension}.out"
+        ],
+        "options": {
+          "cwd": "${fileDirname}"
+        },
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "problemMatcher": [
+          "$gcc"
+        ],
+        "detail": "Prosta kompilacja pojedynczego pliku z symbolami debuggowania"
+      }
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "(gdb) Uruchom i Debuguj",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "${fileDirname}/app",
+        "args": [],
+        "stopAtEntry": false,
+        "cwd": "${fileDirname}",
+        "environment": [],
+        "externalConsole": false,
+        "MIMode": "gdb",
+        "miDebuggerPath": "/usr/bin/gdb",
+        "setupCommands": [
+          {
+            "description": "Włącz ładne formatowanie dla gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+          }
+        ],
+        "preLaunchTask": "Build project with Make"
+      }
+    ]
+  }
+}
