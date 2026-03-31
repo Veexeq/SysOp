@@ -10,3 +10,4 @@ misc/
 *.exe
 *.a
 *.so
+*.log
