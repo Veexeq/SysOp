@@ -43,7 +43,7 @@ $(LIB_SHARED): $(LIB_SOURCES) sig_handler.h
 
 static: main.c child.c $(LIB_STATIC)
 	$(CC) $(CFLAGS) -DCHILD_PATH=\"./child_static.out\" main.c -o main.out
-	$(CC) $(CFLAGS) child.c -L. -l$(LIB_NAME) -o child_static.out
+	$(CC) $(CFLAGS) child.c $(LIB_STATIC) -o child_static.out
 
 shared: main.c child.c $(LIB_SHARED)
 	$(CC) $(CFLAGS) -DCHILD_PATH=\"./child_shared.out\" main.c -o main.out
@@ -58,4 +58,3 @@ dynamic: main.c child.c $(LIB_SHARED)
 # ==========================================
 clean:
 	rm -f *.o *.a *.so *.out
-	
