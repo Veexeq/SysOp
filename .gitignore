@@ -8,3 +8,6 @@ misc/
 *.out
 **/app
 *.exe
+*.a
+*.so
+*.log
