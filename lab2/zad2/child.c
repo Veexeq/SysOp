@@ -10,6 +10,9 @@
 #include <string.h>
 #include <signal.h>
 
+// Bezpieczna zmienna globalna dla zapisu otrzymanego trybu przetwarzania sygnału
+volatile sig_atomic_t received_mode = 0;
+
 void initialize_usr2_handling(void);
 void usr2_handler(int, siginfo_t *, void *);
 void mode_setup(char);
@@ -22,6 +25,15 @@ void custom_handler(int);
 
 int main(void) {
     initialize_usr2_handling();
+
+    // Czekamy na otrzymanie sygnału
+    while (received_mode == 0) {
+        pause();
+    }
+
+    // Po zostaniu wybudzonym przez SIGUSR2, w received_mode znajduje się już 
+    // informacja o trybie przetwarzania SIGUSR1
+    mode_setup((char) received_mode);
 
     for (int i = 1; i <= 20; ++i) {
         printf("%d\n", i);
@@ -76,10 +88,11 @@ void initialize_usr2_handling(void) {
  * 
  * Należy ustawiać maskę zawsze z 'normalnego' trybu pracy jądra, nie z 
  * wnętrza handlera jakiegoś sygnału. 
+ * 
+ * Teraz nasz handler jedynie zapisuje do zmiennej globalnej jaki tryb wybrano.
  */
 void usr2_handler(int signo, siginfo_t *info, void *context) {
-    char mode = (char) info->si_value.sival_int;
-    mode_setup(mode);
+    received_mode = info->si_value.sival_int;
 }
 
 void mode_setup(char mode) {

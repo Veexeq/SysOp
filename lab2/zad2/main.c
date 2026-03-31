@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
         _exit(EXIT_FAILURE);
     }
     if (pid == 0) {
-        execl("./child", "./child", NULL);
+        execl("./child.out", "./child.out", NULL);
 
         perror("execl on ./child failed\n");
         _exit(EXIT_FAILURE);
