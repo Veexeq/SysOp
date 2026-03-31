@@ -12,6 +12,10 @@
 #include <string.h>
 #include <sys/wait.h>
 
+#ifndef CHILD_PATH
+#define CHILD_PATH "./child.out"
+#endif
+
 char parse_input(int, char *[]);
 
 int main(int argc, char *argv[]) {
@@ -25,7 +29,7 @@ int main(int argc, char *argv[]) {
         _exit(EXIT_FAILURE);
     }
     if (pid == 0) {
-        execl("./child.out", "./child.out", NULL);
+        execl(CHILD_PATH, CHILD_PATH, NULL);
 
         perror("execl on ./child failed\n");
         _exit(EXIT_FAILURE);
