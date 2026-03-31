@@ -4,7 +4,7 @@
  */
 #define _POSIX_C_SOURCE 200809L
 
-#ifndef USE_DYNAMIC
+#ifdef USE_DYNAMIC
     #include <dlfcn.h>
 #endif
 
