@@ -139,7 +139,13 @@ void mode_setup(char mode) {
         // Wywołujemy funkcję z libsig_handler.so
         handler_func(signo);
 
-        dlclose(handle);
+        /**
+         * Zostawiamy tę bibliotekę otwartą, gdyż inaczej będzie
+         * SEGFAULT przy próbie obsługi sygnału (odwołujemy się do
+         * pamięci, która została już posprzątana).
+         * System operacyjny po zakończeniu procesu posprząta tę bibliotekę.
+         */
+        // dlclose(handle);
     #else
         switch (mode)
         {
