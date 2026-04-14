@@ -14,8 +14,8 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
     char *endptr;
-    const double dx = strtod(argv[1], &endptr);
-    if (endptr == argv[1] || *endptr != '\0' || dx <= 0.0) {
+    double dx = strtod(argv[1], &endptr);
+    if (endptr == argv[1] || *endptr != '\0' || dx < 0.0) {
         fprintf(stderr, "Błąd: dx musi być dodatnią liczbą zmiennoprzecinkową.\n");
         return EXIT_FAILURE;
     }
@@ -24,6 +24,11 @@ int main(int argc, char *argv[]) {
     if (endptr == argv[2] || *endptr != '\0' || n <= 0) {
         fprintf(stderr, "Błąd: n musi być dodatnią liczbą całkowitą.\n");
         return EXIT_FAILURE;
+    }
+
+    // Domyślne zachowanie, które liczy na jednym procesie kilka sekund
+    if (dx == 0) {
+        dx = 0.000000001;
     }
 
     // Główna pętla programu - testujemy dla k = 1, 2, ..., n procesów
