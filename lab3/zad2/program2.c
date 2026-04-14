@@ -1,14 +1,56 @@
+#define _POSIX_C_SOURCE 199309L
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <signal.h>
 #include "common.h"
 #include "../zad1/integrator.h" 
 
+// --- SIGNAL HANDLER ---
+// Ta funkcja wykona się, gdy proces dostanie SIGINT lub SIGTERM
+void handle_shutdown(int sig) {
+    printf("\n[Program 2] Otrzymano sygnal %d. Zamykam serwer i sprzatam...\n", sig);
+    
+    // Usuwamy pliki FIFO z dysku
+    if (unlink(FIFO_REQ) == -1) {
+        perror("Blad podczas usuwania FIFO_REQ\n");
+    } else {
+        printf("Usunieto %s\n", FIFO_REQ);
+    }
+    
+    if (unlink(FIFO_RES) == -1) {
+        perror("Blad podczas usuwania FIFO_RES\n");
+    } else {
+        printf("Usunieto %s\n", FIFO_RES);
+    }
+
+    exit(EXIT_SUCCESS); // Czyste zamknięcie programu
+}
+
 int main() {
     printf("--- PROGRAM 2 (Liczący) ---\n");
+
+    // --- REJESTRACJA OBSŁUGI SYGNAŁÓW ---
+    struct sigaction sa;
+    sa.sa_handler = handle_shutdown; // Wskazujemy naszą funkcję sprzątającą
+    sa.sa_flags = 0;
+    sigemptyset(&sa.sa_mask); // Pusty koszyk blokowanych sygnałów
+    
+    // Podpinamy handler pod Ctrl+C (SIGINT)
+    if (sigaction(SIGINT, &sa, NULL) == -1) {
+        perror("Blad rejestracji SIGINT\n");
+        return EXIT_FAILURE;
+    }
+    
+    // Podpinamy handler pod komendę kill (SIGTERM)
+    if (sigaction(SIGTERM, &sa, NULL) == -1) {
+        perror("Blad rejestracji SIGTERM\n");
+        return EXIT_FAILURE;
+    }
 
     // Tworzenie potoków na dysku
     if (mkfifo(FIFO_REQ, 0666) == -1 && errno != EEXIST) {
