@@ -16,14 +16,14 @@
 #define MAX_Q_NAME 64
 
 typedef enum {
-    MST_INIT,
+    MSG_INIT,
     MSG_ID_ASSIGN,
     MSG_TEXT,
 } MessageType;
 
-typedef struct {
+typedef struct ChatMessage {
     MessageType type;
-    int cliend_id;
+    int client_id;
     char queue_name[MAX_Q_NAME];
     char text[MAX_TEXT];
 } ChatMessage;
