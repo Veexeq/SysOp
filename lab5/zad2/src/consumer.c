@@ -8,9 +8,9 @@ sem_t *mutex = SEM_FAILED;
 sem_t *empty = SEM_FAILED;
 sem_t *full = SEM_FAILED;
 
-// Graceful shutdown handler triggered by SIGINT (Ctrl+C)
-void cleanup_handler(const int sig) {
-    printf("\n[Consumer PID: %d] Received SIGINT (Ctrl+C). Cleaning up...\n", getpid());
+// Shutdown handler for SIGINT and SIGTERM
+void cleanup_handler(int sig) {
+    printf("\n[Consumer PID: %d] Received signal (%d). Cleaning up...\n", getpid(), sig);
 
     if (mutex != SEM_FAILED) sem_close(mutex);
     if (empty != SEM_FAILED) sem_close(empty);
@@ -25,6 +25,7 @@ void cleanup_handler(const int sig) {
 int main(void) {
     // Register the signal handler
     signal(SIGINT, cleanup_handler);
+    signal(SIGTERM, cleanup_handler);
 
     // ==========================================
     // 1. SETUP SHARED MEMORY
