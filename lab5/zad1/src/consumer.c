@@ -1,13 +1,38 @@
 #include "common.h"
+#include <signal.h>
+
+// Global IPC variables required for the signal handler to close them properly
+int shm_fd = -1;
+SharedMemory *shm_ptr = MAP_FAILED;
+sem_t *mutex = SEM_FAILED;
+sem_t *empty = SEM_FAILED;
+sem_t *full = SEM_FAILED;
+
+// Graceful shutdown handler triggered by SIGINT (Ctrl+C)
+void cleanup_handler(const int sig) {
+    printf("\n[Consumer PID: %d] Received SIGINT (Ctrl+C). Cleaning up...\n", getpid());
+
+    if (mutex != SEM_FAILED) sem_close(mutex);
+    if (empty != SEM_FAILED) sem_close(empty);
+    if (full != SEM_FAILED)  sem_close(full);
+    
+    if (shm_ptr != MAP_FAILED) munmap(shm_ptr, sizeof(SharedMemory));
+    if (shm_fd != -1)          close(shm_fd);
+
+    exit(EXIT_SUCCESS);
+}
 
 int main(void) {
+    // Register the signal handler
+    signal(SIGINT, cleanup_handler);
+
     // ==========================================
     // 1. SETUP SHARED MEMORY
     // ==========================================
     
     // Open the shared memory object. 
     // We use O_CREAT just in case the consumer is started before the producer.
-    int shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
+    shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
     if (shm_fd == -1) {
         perror("shm_open failed");
         exit(EXIT_FAILURE);
@@ -20,7 +45,7 @@ int main(void) {
     }
 
     // Map the shared memory into the process's virtual address space
-    SharedMemory *shm_ptr = mmap(NULL, sizeof(SharedMemory), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    shm_ptr = mmap(NULL, sizeof(SharedMemory), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
     if (shm_ptr == MAP_FAILED) {
         perror("mmap failed");
         exit(EXIT_FAILURE);
@@ -31,9 +56,9 @@ int main(void) {
     // ==========================================
     
     // Open the semaphores.
-    sem_t *mutex = sem_open(SEM_MUTEX, O_CREAT, 0666, 1);
-    sem_t *empty = sem_open(SEM_EMPTY, O_CREAT, 0666, K);
-    sem_t *full  = sem_open(SEM_FULL,  O_CREAT, 0666, 0);
+    mutex = sem_open(SEM_MUTEX, O_CREAT, 0666, 1);
+    empty = sem_open(SEM_EMPTY, O_CREAT, 0666, K);
+    full  = sem_open(SEM_FULL,  O_CREAT, 0666, 0);
 
     if (mutex == SEM_FAILED || empty == SEM_FAILED || full == SEM_FAILED) {
         perror("sem_open failed");
@@ -46,8 +71,7 @@ int main(void) {
     // 3. MAIN CONSUMER LOOP
     // ==========================================
     
-    // Consume 10 tasks for demonstration purposes
-    for (int i = 0; i < 10; i++) {
+    while (1) {
         char task_str[TASK_LEN];
 
         // --- SYNCHRONIZATION START ---
@@ -81,6 +105,7 @@ int main(void) {
         // ==========================================
         // 4. PROCESS THE TASK (OUTSIDE CRITICAL SECTION)
         // ==========================================
+        
         // It is crucial to process the data OUTSIDE the critical section.
         // If we did this while holding the mutex, we would block the entire system 
         // for several seconds just to print characters.
