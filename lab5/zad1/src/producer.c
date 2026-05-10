@@ -106,5 +106,5 @@ int main(void) {
     munmap(shm_ptr, sizeof(SharedMemory));
     close(shm_fd);
 
-    return 0;
+    return EXIT_SUCCESS;
 }

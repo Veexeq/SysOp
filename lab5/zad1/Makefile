@@ -12,15 +12,17 @@ BIN_DIR = bin
 # Executable names
 PRODUCER_BIN = $(BIN_DIR)/producer.out
 CONSUMER_BIN = $(BIN_DIR)/consumer.out
+CLEANER_BIN  = $(BIN_DIR)/cleaner.out
 
-.PHONY: all clean directories producer consumer
+.PHONY: all clean directories producer consumer cleaner
 
 # Default target
-all: directories $(PRODUCER_BIN) $(CONSUMER_BIN)
+all: directories $(PRODUCER_BIN) $(CONSUMER_BIN) $(CLEANER_BIN)
 
 # Friendly aliases
 producer: directories $(PRODUCER_BIN)
 consumer: directories $(CONSUMER_BIN)
+cleaner:  directories $(CLEANER_BIN)
 
 # Directory creation
 directories:
@@ -34,6 +36,10 @@ $(PRODUCER_BIN): $(OBJ_DIR)/producer.o
 $(CONSUMER_BIN): $(OBJ_DIR)/consumer.o
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
+# Linking Cleaner
+$(CLEANER_BIN): $(OBJ_DIR)/cleaner.o
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+
 # Compiling source files to object files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(SRC_DIR)/common.h
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -42,3 +48,4 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(SRC_DIR)/common.h
 clean:
 	@echo "Cleaning up build artifacts..."
 	rm -rf $(BIN_DIR) $(OBJ_DIR)
+	
