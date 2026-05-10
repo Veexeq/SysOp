@@ -1,0 +1,62 @@
+name: CI - Operating Systems Laboratories
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install build dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential libpthread-stubs0-dev
+
+    - name: Build Lab 1 (Manual & Makefile)
+      run: |
+        cd lab1
+        if [ -d "zad1" ]; then gcc -Wall zad1/main.c -o zad1/main.out; fi
+        if [ -f "zad2/Makefile" ]; then cd zad2 && make && cd ..; fi
+        if [ -f "zad3/Makefile" ]; then cd zad3 && make && cd ..; fi
+        cd ..
+
+    - name: Build Lab 2 (Signals & Libraries)
+      run: |
+        cd lab2
+        make all
+
+    - name: Build Lab 3 (Pipes & FIFOs)
+      run: |
+        cd lab3
+        make all
+
+    - name: Build Lab 4 (Message Queues)
+      run: |
+        cd lab4
+        make all
+
+    - name: Build Lab 5 (Semaphores & Shared Memory)
+      run: |
+        for d in lab5/zad*/; do
+          if [ -f "$d/Makefile" ]; then
+            echo "Building $d"
+            cd "$d" && make all && cd -
+          fi
+        done
+
+    - name: Verify IPC Cleanup Utilities
+      run: |
+        if [ -f "lab5/zad3/bin/cleaner.out" ]; then
+          ./lab5/zad3/bin/cleaner.out
+        fi
+
+    - name: Success Notification
+      run: echo "All laboratories compiled successfully!"
+    
