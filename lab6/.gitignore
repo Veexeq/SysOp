@@ -1,0 +1,9 @@
+# Object files
+obj/*.o
+
+# Executables
+bin/*.out
+
+# Generated output files (simulated images, logs, reports)
+*.jpg
+*.txt
