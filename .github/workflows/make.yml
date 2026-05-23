@@ -29,30 +29,41 @@ jobs:
 
     - name: Build Lab 2 (Signals & Libraries)
       run: |
-        cd lab1
-        if [ -d "zad1" ]; then gcc -Wall zad1/main.c -o zad1/main.out; fi
-        if [ -d "zad2" ]; then gcc -Wall zad2/main.c -o zad1/main.out && gcc zad2/child.c -o child.out; fi
-        if [ -f "zad3/Makefile" ]; then cd zad3 && make && cd ..; fi
-        cd ..
+        # Fixed directory change (was cd lab1)
+        if [ -d "lab2" ]; then
+          cd lab2
+          if [ -d "zad1" ]; then gcc -Wall zad1/main.c -o zad1/main.out; fi
+          if [ -d "zad2" ]; then gcc -Wall zad2/main.c -o zad2/main.out && gcc -Wall zad2/child.c -o zad2/child.out; fi
+          if [ -f "zad3/Makefile" ]; then cd zad3 && make && cd ..; fi
+          cd ..
+        fi
 
     - name: Build Lab 3 (Pipes & FIFOs)
       run: |
-        cd lab3
-        make all
+        if [ -d "lab3" ]; then
+          cd lab3
+          make all
+          cd ..
+        fi
 
     - name: Build Lab 4 (Message Queues)
       run: |
-        cd lab4
-        make all
+        if [ -d "lab4" ]; then
+          cd lab4
+          make all
+          cd ..
+        fi
 
     - name: Build Lab 5 (Semaphores & Shared Memory)
       run: |
-        for d in lab5/zad*/; do
-          if [ -f "$d/Makefile" ]; then
-            echo "Building $d"
-            cd "$d" && make all && cd -
-          fi
-        done
+        if [ -d "lab5" ]; then
+          for d in lab5/zad*/; do
+            if [ -f "$d/Makefile" ]; then
+              echo "Building $d"
+              cd "$d" && make all && cd -
+            fi
+          done
+        fi
 
     - name: Verify IPC Cleanup Utilities
       run: |
@@ -60,6 +71,17 @@ jobs:
           ./lab5/zad3/bin/cleaner.out
         fi
 
+    - name: Build Lab 6 (Pthreads, RTOS & Sync)
+      run: |
+        if [ -d "lab6" ]; then
+          cd lab6
+          # We call specific targets because our Makefile's 'all' just prints a message
+          make level1
+          make level2
+          make level3
+          cd ..
+        fi
+
     - name: Success Notification
       run: echo "All laboratories compiled successfully!"
-    
+      
