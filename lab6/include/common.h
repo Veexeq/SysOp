@@ -55,4 +55,18 @@ void get_current_time(struct timespec *ts);
 // Precise thread sleep for a given frequency (e.g., 25 Hz)
 void sleep_for_freq(int freq_hz);
 
+// --- BUFFER OPERATIONS (Task 2) ---
+
+// Initializes the circular buffer and its synchronization mechanisms
+void buffer_init(frame_buffer_t* buf);
+
+// Pushes a frame into the buffer. Overwrites the oldest frame if full.
+void buffer_push(frame_buffer_t* buf, frame_t frame);
+
+// Pops a frame from the buffer. Blocks if empty. Returns false if interrupted.
+bool buffer_pop(frame_buffer_t* buf, frame_t* frame, volatile bool* is_running);
+
+// Cleans up mutexes and condition variables
+void buffer_destroy(frame_buffer_t* buf);
+
 #endif // COMMON_H
