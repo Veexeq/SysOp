@@ -1,18 +1,22 @@
 CC = gcc
-# Flags: warnings, POSIX threads support, debugging, and include directory
 CFLAGS = -Wall -Wextra -pthread -g -I$(INCDIR)
 
-# Directories
 INCDIR = include
 SRCDIR = src
 OBJDIR = obj
 BINDIR = bin
 
-# Create directories if they do not exist (useful for WSL/Linux)
 $(shell mkdir -p $(OBJDIR) $(BINDIR))
 
-# Default target
-all: $(BINDIR)/level1.out $(BINDIR)/level2.out $(BINDIR)/level3.out
+.PHONY: all clean level1 level2 level3
+
+# Default target alerts the user to build a specific level iteratively
+all:
+	@echo "Please specify a target to build: make level1, make level2, or make level3"
+
+level1: $(BINDIR)/level1.out
+level2: $(BINDIR)/level2.out
+level3: $(BINDIR)/level3.out
 
 # --- Object files compilation ---
 
@@ -43,5 +47,4 @@ $(BINDIR)/level3.out: $(OBJDIR)/common.o $(OBJDIR)/program3.o
 clean:
 	rm -rf $(OBJDIR)/* $(BINDIR)/*
 	rm -f *.jpg *.txt
-
-.PHONY: all clean
+	
