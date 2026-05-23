@@ -110,11 +110,11 @@ void* image_writer_thread(void* arg) {
             has_new_sync_pair = false;
             pthread_mutex_unlock(&sync_mutex);
             
-            // Simulate saving .jpg files
+            // Simulate saving .jpg files in the output directory
             char filename_left[64];
             char filename_right[64];
-            snprintf(filename_left, sizeof(filename_left), "left_%04d.jpg", left.frame_id);
-            snprintf(filename_right, sizeof(filename_right), "right_%04d.jpg", right.frame_id);
+            snprintf(filename_left, sizeof(filename_left), "output/left_%04d.jpg", left.frame_id);
+            snprintf(filename_right, sizeof(filename_right), "output/right_%04d.jpg", right.frame_id);
             
             FILE* f_left = fopen(filename_left, "w");
             if (f_left) { 
@@ -160,7 +160,9 @@ void* robot_state_thread(void* arg) {
 
 void* logger_thread(void* arg) {
     (void)arg;
-    FILE* log_file = fopen("robot_state.txt", "w");
+    
+    // Save log file in the output directory
+    FILE* log_file = fopen("output/robot_state.txt", "w");
     if (!log_file) {
         perror("Failed to open log file");
         return NULL;
