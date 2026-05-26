@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <signal.h>
+#include <errno.h>
 
 #define SERVER_PORT 9000
 
@@ -15,6 +17,20 @@
 
 #define BUFFER_SIZE 1024
 
+/* * Global flag used to control the main server loop execution.
+ * volatile: Tells the compiler not to optimize this variable into a register.
+ * sig_atomic_t: Guaranteed to be accessed atomically even during an interrupt.
+ */
+volatile sig_atomic_t keep_running = 1;
+
+/* * Signal handler function for SIGINT (Ctrl+C).
+ * This function must execute as fast as possible and only perform safe operations.
+ */
+void handle_sigint(int sig) {
+    (void)sig; /* Suppress unused parameter warning */
+    keep_running = 0; /* Just flip the switch, let main handle the cleanup */
+}
+
 int main(void) {
     int server_fd;
     struct sockaddr_in server_address;
@@ -22,6 +38,21 @@ int main(void) {
 
     /* Global request counter required by the assignment task */
     int request_counter = 0;
+
+    struct sigaction sa;
+
+    /* ==============================================================================
+     * SIGNAL CONFIGURATION (Modern sigaction approach)
+     * ============================================================================== */
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = handle_sigint; /* Point to our custom handler function */
+    sigemptyset(&sa.sa_mask);      /* Do not block any other signals during execution */
+    sa.sa_flags = 0;               /* Do NOT use SA_RESTART. We WANT system calls to fail with EINTR */
+
+    if (sigaction(SIGINT, &sa, NULL) < 0) {
+        perror("Failed to register SIGINT handler");
+        exit(EXIT_FAILURE);
+    }
 
     /* * STEP 1: Create the socket descriptor.
      * - AF_INET: Specifies the IPv4 protocol family.
@@ -85,7 +116,7 @@ int main(void) {
     /* ==============================================================================
      * INFINITE SERVER LOOP (Iterative approach)
      * ============================================================================== */
-    while (1) {
+    while (keep_running) {
         int client_fd;
         struct sockaddr_in client_address;
         socklen_t client_addr_len = sizeof(client_address);
@@ -177,7 +208,12 @@ int main(void) {
         close(client_fd);
     }
 
-    /* Unreachable code in this architecture, but good practice for cleanup */
+    /* ==============================================================================
+     * SAFE CLEANUP SECTION
+     * ============================================================================== */
+    printf("Closing server listening socket and releasing resources...\n");
     close(server_fd);
-    return 0;
+    
+    printf("Final application state: REQUEST_COUNTER = %d\n", request_counter);
+    printf("Server shut down gracefully. Goodbye!\n");
 }
