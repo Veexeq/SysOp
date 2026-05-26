@@ -5,7 +5,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-/* Define the port on which the server will listen */
 #define SERVER_PORT 9000
 
 /* * Defines the maximum number of pending connections in the queue.
@@ -14,10 +13,15 @@
  */
 #define BACKLOG_SIZE 10
 
+#define BUFFER_SIZE 1024
+
 int main(void) {
     int server_fd;
     struct sockaddr_in server_address;
     int opt_reuse = 1;
+
+    /* Global request counter required by the assignment task */
+    int request_counter = 0;
 
     /* * STEP 1: Create the socket descriptor.
      * - AF_INET: Specifies the IPv4 protocol family.
@@ -76,15 +80,104 @@ int main(void) {
         exit(EXIT_FAILURE);
     }
 
-    printf("SUCCESS: Server is listening on port %d!\n", SERVER_PORT);
-    printf("Temporary: Sleeping for 20 seconds. Open another terminal and run 'ss -tulpn'\n");
-    
-    /* Temporary sleep to keep the socket alive for your verification */
-    sleep(20);
+    printf("SUCCESS: Server is fully operational and listening on port %d...\n", SERVER_PORT);
 
-    /* Clean up the socket before exiting */
+    /* ==============================================================================
+     * INFINITE SERVER LOOP (Iterative approach)
+     * ============================================================================== */
+    while (1) {
+        int client_fd;
+        struct sockaddr_in client_address;
+        socklen_t client_addr_len = sizeof(client_address);
+        
+        char rx_buffer[BUFFER_SIZE];
+        char tx_buffer[BUFFER_SIZE * 2];
+        char http_body[BUFFER_SIZE];
+        
+        ssize_t bytes_received;
+
+        /* * STEP 1: Wait and accept an incoming connection.
+         * accept4() blocks the execution until a client connects.
+         * SOCK_CLOEXEC ensures the client socket descriptor is not leaked to child processes.
+         */
+        client_fd = accept4(server_fd, (struct sockaddr *)&client_address, &client_addr_len, SOCK_CLOEXEC);
+        if (client_fd < 0) {
+            perror("Accept failed");
+            continue; /* Do not crash the server, just wait for the next client */
+        }
+
+        /* * STEP 2: Read data sent by the client.
+         * We reserve the last byte of our buffer for the null-terminator '\0'.
+         */
+        memset(rx_buffer, 0, sizeof(rx_buffer));
+        bytes_received = recv(client_fd, rx_buffer, sizeof(rx_buffer) - 1, 0);
+        
+        if (bytes_received < 0) {
+            perror("Recv failed");
+            close(client_fd);
+            continue;
+        } else if (bytes_received == 0) {
+            /* Client disconnected immediately without sending data */
+            close(client_fd);
+            continue;
+        }
+
+        /* * CRITICAL STEP FOR C: Null-terminate the received data.
+         * Network functions send raw bytes, not C-style strings. Without '\0', 
+         * string functions like strncmp() or sscanf() would read out of bounds.
+         */
+        rx_buffer[bytes_received] = '\0';
+
+        /* Print the first line of the received request to the server terminal */
+        printf("--- NEW REQUEST RECEIVED ---\n%s\n----------------------------\n", rx_buffer);
+
+        /* * STEP 3: Parse the request and execute business logic.
+         * We look for HTTP methods (GET/POST) or our custom command (ZADANIE).
+         */
+        if (strncmp(rx_buffer, "GET", 3) == 0 || strncmp(rx_buffer, "POST", 4) == 0) {
+            
+            /* Increment counter for valid HTTP requests */
+            request_counter++;
+
+            /* 1. Generate the response text body first, so we can calculate its exact length */
+            int body_len = snprintf(http_body, sizeof(http_body), "Liczba pobrań strony: %d", request_counter);
+
+            /* 2. Assemble the complete HTTP response including headers and the body */
+            snprintf(tx_buffer, sizeof(tx_buffer),
+                     "HTTP/1.1 200 OK\r\n"
+                     "Server: Zajeciowy serwer SO\r\n"
+                     "Content-Type: text/plain; charset=utf-8\r\n"
+                     "Connection: close\r\n"
+                     "Cache-Control: no-store\r\n"
+                     "Content-Length: %d\r\n\r\n"
+                     "%s", 
+                     body_len, http_body);
+
+            /* 3. Send the formatted HTTP package back to the client */
+            send(client_fd, tx_buffer, strlen(tx_buffer), MSG_NOSIGNAL);
+
+        } else if (strncmp(rx_buffer, "ZADANIE", 7) == 0) {
+            int task_value = 0;
+
+            /* Extract the integer value following the "ZADANIE" keyword */
+            if (sscanf(rx_buffer, "ZADANIE %d", &task_value) == 1) {
+                request_counter += task_value;
+            }
+
+            /* Format response text WITHOUT any HTTP headers, as requested */
+            snprintf(tx_buffer, sizeof(tx_buffer), "Liczba pobrań strony: %d", request_counter);
+
+            /* Send raw text response */
+            send(client_fd, tx_buffer, strlen(tx_buffer), MSG_NOSIGNAL);
+        }
+
+        /* * STEP 4: Close the connection.
+         * This triggers the TCP FIN handshake, releasing the client socket resources.
+         */
+        close(client_fd);
+    }
+
+    /* Unreachable code in this architecture, but good practice for cleanup */
     close(server_fd);
-    printf("Server shut down successfully.\n");
-
     return 0;
 }

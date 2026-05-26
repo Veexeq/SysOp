@@ -6,8 +6,9 @@ CC = gcc
 # -Werror: Treat all warnings as errors (strict code quality control)
 # -g: Generate debugging symbols for GDB and Valgrind
 # -std=c11: Use the ISO C11 standard
+# -D_GNU_SOURCE: Allow Linux-specific solutions (like accept4() function)
 # -Iinclude: Look for header files inside the 'include' directory
-CFLAGS = -Wall -Wextra -Werror -g -std=c11 -Iinclude
+CFLAGS = -Wall -Wextra -Werror -g -std=c11 -D_GNU_SOURCE -Iinclude
 
 # ==============================================================================
 # Directory Structure
