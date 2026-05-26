@@ -82,6 +82,15 @@ jobs:
           cd ..
         fi
 
+    - name: Build Lab 7 (Sockets)
+      run: |
+        if [ -d "lab7" ]; then
+          cd lab7
+          # We call specific targets because our Makefile's 'all' just prints a message
+          make all
+          cd ..
+        fi
+
     - name: Success Notification
       run: echo "All laboratories compiled successfully!"
       

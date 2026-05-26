@@ -1,0 +1,21 @@
+# --- Build Artifacts ---
+bin/
+obj/
+*.o
+*.out
+
+# --- Debug & Temporary Files ---
+*.gch
+.core
+vgcore.*
+
+# --- IDEs and Editors ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- OS specific ---
+.DS_Store
+Thumbs.db

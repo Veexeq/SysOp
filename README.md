@@ -19,6 +19,7 @@ The projects focus on low-level system programming in UNIX/Linux environments, u
 | [`lab4/`](./lab4) | POSIX Message Queues (IPC) | A "hub and spoke" communication system where multiple independent terminal clients exchange text messages in real-time using `/dev/mqueue`. Features asynchronous I/O managed by duplicating processes via `fork()`. |
 | [`lab5/`](./lab5) | POSIX Semaphores & Shared Memory | Implementation of the classic Producer-Consumer problem within a multi-process architecture. Leverages POSIX shared memory for zero-copy data transfer and POSIX semaphores for strict access synchronization, complete with a Manager daemon mitigating starvation via an aging algorithm. |
 | [`lab6/`](./lab6) | POSIX Threads, RTOS scheduling | A comprehensive, multithreaded simulation of a mobile robot's internal operating system. POSIX threads (pthreads), complex inter-thread communication, synchronization mechanisms, and Real-Time Operating System (RTOS) scheduling. |
+| [`lab7/`](./lab7) | TCP/IP Sockets, Dual-Protocol HTTP Server | An iterative TCP server and client implementation featuring dual-protocol support (HTTP/1.1 and custom text commands). Focuses on network engineering patterns, including modern Linux `accept4()` with `SOCK_CLOEXEC`, graceful shutdown using `sigaction()` to intercept `EINTR`, and live integration testing via a `tmux` automation script. |
 
 ## ⚙️ System Requirements
 
